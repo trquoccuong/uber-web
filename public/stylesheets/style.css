@@ -1,0 +1,47 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+#map {
+  min-height: 550px;
+}
+
+label > input{ /* HIDE RADIO */
+  visibility: hidden; /* Makes input not-clickable */
+  position: absolute; /* Remove input from document flow */
+}
+label > input + img{ /* IMAGE STYLES */
+  cursor:pointer;
+  border:2px solid transparent;
+}
+label > input:checked + img{ /* (RADIO CHECKED) IMAGE STYLES */
+  border:2px solid #f00;
+}
+
+.selectType  {
+  text-align: center;
+}
+.selectType label {
+  margin-right: 40px;
+  margin-left: 40px;
+}
+#mini-padding {
+  margin-top: 60px;
+}
+
+
+.locationbox .input-group {
+  margin-right: 5px;
+  margin-top: 20px;
+  width: 48%;
+}
+
+.infobox .input-group {
+  margin-right: 5px;
+  width: 32%;
+}

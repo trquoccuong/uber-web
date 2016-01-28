@@ -1,0 +1,148 @@
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8" id="map">
+
+        </div>
+        {% if user.type == "passenger" %}
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Make a trip</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div>
+                            <div class="form-group ui-widget">
+                                <label class="control-label">From</label>
+                                <input type="text" name="userLocation" class="form-control" id="userLocation"/>
+                            </div>
+                            <div class="form-group ui-widget">
+                                <label class="control-label">To</label>
+                                <input type="text" name="userEndPoint" class="form-control" id="userDestination"/>
+                            </div>
+                            <div class="form-group">
+                                <button class="form-control btn btn-warning" onclick="calculate()">Check</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div>
+                            <div class="form-group">
+                                <label class="control-label">Distance: </label>
+                                <input type="text" id="trip-distance" class="form-control" disabled/>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Duration: </label>
+                                <input type="text" id="trip-duration" class="form-control" disabled/>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Price: </label>
+                                <input type="text" id="trip-price" class="form-control" disabled/>
+                            </div>
+                            <div class="form-group">
+                                <button class="form-control btn btn-success" onclick="findDriver()" id="findDriver"
+                                        disabled>Make trip
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <input type="hidden" id="user_type" value="{{ user.type }}"/>
+
+{% endblock %}
+
+{% block jsExtends %}
+    <script type='text/javascript'>
+
+        var socket = io.connect(':3000');
+        var userType = $("#user_type").val();
+        socket.emit("subscribe", {type: userType});
+
+
+        var delay = (function () {
+            var timer = 0;
+            return function (callback, ms) {
+                clearTimeout(timer);
+                timer = setTimeout(callback, ms);
+            };
+        })();
+
+        $("#userLocation").keyup(function () {
+            delay(function () {
+                var userLocation = $("#userLocation").val();
+                $.post("/api/autocomplete", {location: userLocation}, function (data) {
+                    data = JSON.parse(data);
+                    if (data.predictions) {
+                        var listLocation = data.predictions.map(function (item) {
+                            return item.description;
+                        });
+                        $("#userLocation").autocomplete({
+                            source: listLocation
+                        });
+                    }
+                });
+            }, 1000);
+        });
+
+        $("#userDestination").keyup(function () {
+            delay(function () {
+                var userLocation = $("#userDestination").val();
+                $.post("/api/autocomplete", {location: userLocation}, function (data) {
+                    data = JSON.parse(data);
+                    if (data.predictions) {
+                        var listLocation = data.predictions.map(function (item) {
+                            return item.description;
+                        });
+                        $("#userDestination").autocomplete({
+                            source: listLocation
+                        });
+                    }
+                });
+            }, 1000);
+        });
+        function calculate() {
+            var userLocation = $("#userLocation").val();
+            var userDestination = $("#userDestination").val();
+            $.post("/api/distance", {location: userLocation, destination: userDestination}, function (data) {
+                if (data) {
+                    $("#trip-distance").val(data[0].distance.text);
+                    $("#trip-duration").val(data[0].duration.text);
+                    $("#trip-price").val(data[0].distance.value * 1000);
+                    initMap(userLocation, userDestination)
+                    $("#findDriver").prop('disabled', false);
+                }
+            });
+        }
+
+
+        initMap();
+
+        function findDriver() {
+            var userLocation = $("#userLocation").val();
+            var userDestination = $("#userDestination").val();
+            var tripDistance = $("#trip-distance").val();
+            var tripDuration = $("#trip-duration").val();
+            var tripPrice = $("#trip-price").val();
+
+            $.post("/trips", {
+                location: userLocation,
+                destination: userDestination,
+                distance: tripDistance,
+                duration: tripDuration,
+                price: tripPrice
+            }, function (data) {
+                if (data.message) {
+
+                } else {
+                    $("#findDriver").prop('disabled', true);
+                    $("#findDriver").text("Waiting..");
+                    socket.emit("needDriver",{tripId : data.trip})
+                }
+            })
+        }
+    </script>
+{% endblock %}

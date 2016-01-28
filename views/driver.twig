@@ -1,0 +1,93 @@
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="modal fade" id="newOffer" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title text-center">New Offer</h3>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div id="modal-map" style="height: 300px">
+
+                        </div>
+                        <div class="form-group form-inline locationbox">
+                            <div class="input-group">
+                                <span class="input-group-addon">From</span>
+                                <input type="text" class="form-control" id="trip-origin" disabled/>
+                            </div>
+
+                            <div class="input-group">
+                                <span class="input-group-addon">To</span>
+                                <input type="text" class="form-control" id="trip-destination" disabled/>
+                            </div>
+                        </div>
+
+                        <div class="form-group form-inline infobox">
+                            <div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="form-control" id="trip-price" disabled/>
+                            </div>
+
+                            <div class="input-group">
+                                <span class="input-group-addon">km</span>
+                                <input type="text" class="form-control" id="trip-distance" disabled/>
+                            </div>
+
+                            <div class="input-group">
+                                <span class="input-group-addon">time</span>
+                                <input type="text" class="form-control" id="trip-duration" disabled/>
+                                <input type="hidden" class="form-control" id="trip-id" disabled/>
+                            </div>
+                        </div>
+
+                    </form>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="modal-footer" style="text-align: left">
+                    <button class="btn btn-success pull-right" onclick="acceptOffer()">Accept</button>
+                    <button class="btn btn-danger" onclick="rejectOffer()">Reject</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="user_type" value="driver"/>
+{% endblock %}
+
+{% block jsExtends %}
+    <script>
+        var timer;
+        var socket = io.connect(':3000');
+        var userType = $("#user_type").val();
+        socket.emit("subscribe", {type: userType});
+        socket.on("newOffer", function (data) {
+            if ($('#newOffer').hasClass('in')) {
+
+            } else {
+                $("#trip-origin").val(data.location);
+                $("#trip-destination").val(data.destination);
+                $("#trip-price").val(data.price);
+                $("#trip-duration").val(data.duration);
+                $("#trip-distance").val(data.distance);
+                $("#trip-id").val(data._id);
+                initMap(data.location, data.destination, "modal-map");
+                $("#newOffer").modal("show");
+            }
+
+            timer = setTimeout(function () {
+                $("#newOffer").modal("hide");
+            },30000)
+        })
+        function rejectOffer(){
+            $("#newOffer").modal("hide");
+            clearTimeout(timer)
+        }
+        function acceptOffer(){
+            $("#newOffer").modal("hide");
+            clearTimeout(timer);
+            var tripId= $("#trip-id").val();
+            socket.emit("acceptOffer",{tripId : tripId});
+        }
+    </script>
+{% endblock %}
