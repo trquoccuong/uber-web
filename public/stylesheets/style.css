@@ -10,6 +10,9 @@ a {
 #map {
   min-height: 550px;
 }
+#modal-map {
+  min-height: 300px;
+}
 
 label > input{ /* HIDE RADIO */
   visibility: hidden; /* Makes input not-clickable */

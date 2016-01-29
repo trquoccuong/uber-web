@@ -15,9 +15,9 @@ module.exports = function (server) {
         });
 
         socket.on("needDriver", function (data) {
-            Trip.findById(data.tripId, function (err,data) {
+            Trip.findById(data.tripId, function (err,tripData) {
                 listOffer[data.tripId] = socket.id;
-                io.to("driver").emit("newOffer",data)
+                io.to("driver").emit("newOffer",tripData)
             })
         });
 

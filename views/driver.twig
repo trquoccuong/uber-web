@@ -1,6 +1,8 @@
 {% extends "layout.twig" %}
 
 {% block body %}
+    <ul id="listUser">
+    </ul>
     <div class="modal fade" id="newOffer" tabindex="-1" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -9,7 +11,7 @@
                 </div>
                 <div class="modal-body">
                     <form>
-                        <div id="modal-map" style="height: 300px">
+                        <div id="modal-map">
 
                         </div>
                         <div class="form-group form-inline locationbox">
@@ -71,8 +73,8 @@
                 $("#trip-duration").val(data.duration);
                 $("#trip-distance").val(data.distance);
                 $("#trip-id").val(data._id);
-                initMap(data.location, data.destination, "modal-map");
                 $("#newOffer").modal("show");
+                initMap(data.location, data.destination, "modal-map");
             }
 
             timer = setTimeout(function () {
@@ -89,5 +91,8 @@
             var tripId= $("#trip-id").val();
             socket.emit("acceptOffer",{tripId : tripId});
         }
+        socket.on("getSuccess", function (data) {
+            $("#listUser").append("<li>User</li>")
+        })
     </script>
 {% endblock %}

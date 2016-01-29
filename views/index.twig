@@ -62,7 +62,6 @@
         var userType = $("#user_type").val();
         socket.emit("subscribe", {type: userType});
 
-
         var delay = (function () {
             var timer = 0;
             return function (callback, ms) {
@@ -140,9 +139,13 @@
                 } else {
                     $("#findDriver").prop('disabled', true);
                     $("#findDriver").text("Waiting..");
-                    socket.emit("needDriver",{tripId : data.trip})
+                    socket.emit("needDriver", {tripId: data.trip})
                 }
             })
         }
+
+        socket.on("haveDriver", function (data) {
+            alert("Have a driver");
+        })
     </script>
 {% endblock %}
